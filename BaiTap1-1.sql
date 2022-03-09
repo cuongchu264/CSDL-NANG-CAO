@@ -145,7 +145,8 @@ exec displayOrderÌno  3
 
 --c) Thuc hiện tạo các Procedure thêm dữ liệu vào bản ORDER_PRODUCT
 
-CREATE proc SP_AddOrderKH                 
+alter proc SP_AddOrderKH   
+                       @OrderId INT,
 					   @CustomerId INT,
 					   @PaymentId INT,
 					   @OrderDay DATE,	
@@ -154,6 +155,12 @@ CREATE proc SP_AddOrderKH
 as
 begin
 
+      	--Ktra trung khoa chinh
+	if exists (select *from ORDER_PRODUCT where ORDER_PRODUCT.OrderId=@OrderId) 
+	begin	
+		print 'Trung khoa chinh'
+		return 
+	end
 
 	--Ktra su ton tai cua MaKH
 	if not exists(select *from CUSTOMER where CUSTOMER.CustomerId=@CustomerId)
@@ -170,11 +177,11 @@ begin
 	end
 
 	 INSERT INTO ORDER_PRODUCT VALUES
-	( @OrderDay, @OrderStatus, @OrderSum, @CustomerId,@PaymentId)
+	(@OrderId, @OrderDay, @OrderStatus, @OrderSum, @CustomerId,@PaymentId)
 end
 go
 
-exec SP_AddOrderKH	 '2022-03-08', 'Pending', 4000.000, 1 , 2
+exec SP_AddOrderKH	4 '2022-03-08', 'Pending', 4000.000, 1 , 2
 go
 
 --d) thủ tục procedure xóa khách hàng theo ID
