@@ -95,6 +95,8 @@ insert into ORDER_DETAIL(OrderDetailId, Quantity, ProductPrice, Total, ProductId
 values(2, 2, 30000, 60000, 2, 2)
 insert into ORDER_DETAIL(OrderDetailId, Quantity, ProductPrice, Total, ProductId, OrderId)
 values(3, 2, 40000, 80000, 3, 3)
+insert into ORDER_DETAIL(OrderDetailId, Quantity, ProductPrice, Total, ProductId, OrderId)
+values(4, 10, 40000, 80000, 1, 3)
 select * from ORDER_DETAIL
 
 --1)View
@@ -109,8 +111,6 @@ SELECT Total,OrderId,OrderDetailId
 FROM ORDER_DETAIL
 WHERE ProductPrice >=30000
 
-SELECT * FROM C_ORDER_DETAIL
-DROP VIEW C_ORDER_DETAIL
 
 
 --2) Procedure
@@ -143,46 +143,22 @@ END;
 
 exec displayOrderÌno  3
 
---c) Thuc hiện tạo các Procedure thêm dữ liệu vào bản ORDER_PRODUCT
+--c) Thủ tục trả về thông tin khách hàng mua hàng nhiều nhất trong năm 2021
 
-alter proc SP_AddOrderKH   
-                       @OrderId INT,
-					   @CustomerId INT,
-					   @PaymentId INT,
-					   @OrderDay DATE,	
-					   @OrderStatus NVARCHAR(100),
-					   @OrderSum float
-as
-begin
+CREATE PROC khachHangVIP
+AS
+	BEGIN
+		select CUSTOMER.*, SoLuongMua from CUSTOMER
+		inner join (select top 1 dh.CustomerId, sum(od.Quantity) as "SumOfQuantity" from CUSTOMER kh
+					inner join ORDER_PRODUCT dh on dh.CustomerId = kh.CustomerId
+					inner join ORDER_DETAIL od on od.OrderId = dh.OrderId
+					group by dh.CustomerId
+					order by sum(od.Quantity) desc) as a 
+		on CUSTOMER.CustomerId = a.CustomerId 
+	END
 
-      	--Ktra trung khoa chinh
-	if exists (select *from ORDER_PRODUCT where ORDER_PRODUCT.OrderId=@OrderId) 
-	begin	
-		print 'Trung khoa chinh'
-		return 
-	end
+execute khachHangVIP
 
-	--Ktra su ton tai cua MaKH
-	if not exists(select *from CUSTOMER where CUSTOMER.CustomerId=@CustomerId)
-	begin
-		print @CustomerId + ' ' + 'Chua ton tai trong bang CUSTOMER'
-		return
-	end
-
-	--Ktra su ton tai cua MaPTTT
-	if not exists(select *from PAYMENT where PAYMENT.PaymentId=@PaymentId)
-	begin
-		print @PaymentId + ' ' + 'Chua ton tai trong bang PAYMENT'
-		return
-	end
-
-	 INSERT INTO ORDER_PRODUCT VALUES
-	(@OrderId, @OrderDay, @OrderStatus, @OrderSum, @CustomerId,@PaymentId)
-end
-go
-
-exec SP_AddOrderKH	4 '2022-03-08', 'Pending', 4000.000, 1 , 2
-go
 
 --d) thủ tục procedure xóa khách hàng theo ID
 create procedure Sp_CUSTOMER (@id_customer int) 
@@ -191,6 +167,8 @@ create procedure Sp_CUSTOMER (@id_customer int)
 		delete from CUSTOMER where CUSTOMER.CustomerId = @id_customer ;  
 	 end  ;
 	 exec Sp_CUSTOMER 4
+
+
 
 --3)Funtion
 --a)Tính tổng total 
