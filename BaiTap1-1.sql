@@ -111,8 +111,12 @@ SELECT Total,OrderId,OrderDetailId
 FROM ORDER_DETAIL
 WHERE ProductPrice >=30000
 
-
-
+--c) TẠO KHUNG NHÌN HIỂN THỊ THÔNG TIN CÁC KHÁCH HÀNG TRONG BẢNG CUSTOMER CÓ ĐỊA CHỈ LÀ ĐÀ NẴNG VÀ CÓ TỔNG TIỀN LỚN HƠN 20000
+CREATE VIEW Customer_view AS 
+	SELECT DBO.CUSTOMER.CustomerId, DBO.CUSTOMER.CustomerName, DBO.CUSTOMER.Email, DBO.ORDER_PRODUCT.OrderSum FROM dbo.CUSTOMER 
+	INNER JOIN DBO.ORDER_PRODUCT ON DBO.CUSTOMER.CustomerId=DBO.ORDER_PRODUCT.CustomerId 
+	WHERE dbo.CUSTOMER.Address = 'Da Nang' AND DBO.ORDER_PRODUCT.OrderSum > 20000
+select * from Customer_view
 --2) Procedure
 --a)Hiện sản phẩm có productprice trên 30000 và total trên 50000
 CREATE PROCEDURE GetProduct
